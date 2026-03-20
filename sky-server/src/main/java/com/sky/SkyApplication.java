@@ -3,6 +3,8 @@ package com.sky;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.core.env.Environment;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 @SpringBootApplication
@@ -10,6 +12,11 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @Slf4j
 public class SkyApplication {
     public static void main(String[] args) {
+
+        //1. 运行时需要打开mysql服务器
+        //2. 配置文件中 password 要和真实的password符合
+
+        //
         SpringApplication.run(SkyApplication.class, args);
         log.info("server started");
     }
