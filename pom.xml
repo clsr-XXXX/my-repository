@@ -69,6 +69,7 @@
                 <version>${pagehelper}</version>
             </dependency>
 
+            <!-- swagger  -->
             <dependency>
                 <groupId>com.github.xiaoymin</groupId>
                 <artifactId>knife4j-spring-boot-starter</artifactId>
@@ -122,6 +123,8 @@
                 <artifactId>wechatpay-apache-httpclient</artifactId>
                 <version>0.4.8</version>
             </dependency>
+
+
         </dependencies>
     </dependencyManagement>
 </project>
