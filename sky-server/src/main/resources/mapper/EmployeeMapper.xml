@@ -12,4 +12,40 @@
         </where>
         order by create_time desc
     </select>
+
+    <update id="update">
+        update employee
+        <set>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <!-- 姓名 -->
+            <if test="name != null and name != ''">
+                name = #{name},
+            </if>
+            <!-- 使用者名稱（帳號） -->
+            <if test="username != null and username != ''">
+                username = #{username},
+            </if>
+            <!-- 電話 -->
+            <if test="phone != null and phone != ''">
+                phone = #{phone},
+            </if>
+            <!-- 性別 -->
+            <if test="sex != null">
+                sex = #{sex},
+            </if>
+            <!-- 身分證號 -->
+            <if test="idNumber != null and idNumber != ''">
+                id_number = #{idNumber},
+            </if>
+            <!-- 更新時間（強制更新為當前時間） -->
+            update_time = now(),
+            <!-- 更新人（通常從 ThreadLocal 取得） -->
+            <if test="updateUser != null">
+                update_user = #{updateUser}
+            </if>
+        </set>
+        where id = #{id}
+    </update>
 </mapper>
