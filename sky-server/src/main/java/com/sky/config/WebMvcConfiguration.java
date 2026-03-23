@@ -1,10 +1,16 @@
 package com.sky.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import com.sky.interceptor.JwtTokenAdminInterceptor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport;
@@ -15,6 +21,8 @@ import springfox.documentation.service.ApiInfo;
 import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spring.web.plugins.Docket;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 /**
@@ -78,8 +86,24 @@ public class WebMvcConfiguration extends WebMvcConfigurationSupport {
 //        log.info("扩展消息转换器...");
 //        MappingJackson2HttpMessageConverter converter = new MappingJackson2HttpMessageConverter();
 //
-//        converter.setObjectMapper(new ObjectMapper());
+//        ObjectMapper objectMapper = new ObjectMapper();
+//        // 注册JavaTimeModule以支持Java 8时间类型
+//        objectMapper.registerModule(new JavaTimeModule());
+//        // 禁用将日期写为时间戳
+//        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 //
-//        converters.add(0,converter);
+//        // 配置LocalDateTime的格式为yyyy-MM-dd
+//        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+//        LocalDateTimeSerializer serializer = new LocalDateTimeSerializer(formatter);
+//        objectMapper.getSerializerProvider().setNullValueSerializer(null); // 可选，处理null值
+//
+//        // 注册自定义序列化器
+//        JavaTimeModule module = new JavaTimeModule();
+//        module.addSerializer(LocalDateTime.class, serializer);
+//        objectMapper.registerModule(module);
+//
+//        converter.setObjectMapper(objectMapper);
+//
+//        converters.add(0, converter);
 //    }
 }
