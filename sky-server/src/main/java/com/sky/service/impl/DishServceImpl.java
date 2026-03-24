@@ -35,9 +35,14 @@ public class DishServceImpl implements DishService {
         dishMapper.insert(dish);
 
 
+        long dishId = dish.getId(); //获取菜品id
+
             //2. 从dishDTO对象中获取口味信息，保存到菜品口味表 dish_flavor
         List<DishFlavor> flavors= dishDTO.getFlavors();
         if(flavors!=null&&flavors.size()>0){
+            flavors.forEach(flavor -> {
+                flavor.setDishId(dishId);
+            });
             dishFlavorMapper.insertBatch(flavors);
         }
     }
