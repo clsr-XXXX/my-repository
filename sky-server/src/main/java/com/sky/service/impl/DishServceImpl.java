@@ -2,12 +2,16 @@ package com.sky.service.impl;
 
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
+import com.sky.constant.MessageConstant;
+import com.sky.constant.StatusConstant;
 import com.sky.dto.DishDTO;
 import com.sky.dto.DishPageQueryDTO;
 import com.sky.entity.Dish;
 import com.sky.entity.DishFlavor;
+import com.sky.exception.DeletionNotAllowedException;
 import com.sky.mapper.DishFlavorMapper;
 import com.sky.mapper.DishMapper;
+import com.sky.mapper.SetMealDishMapper;
 import com.sky.result.PageResult;
 import com.sky.service.DishService;
 import com.sky.vo.DishVO;
@@ -27,6 +31,8 @@ public class DishServceImpl implements DishService {
     private DishMapper dishMapper;
     @Autowired
     private DishFlavorMapper dishFlavorMapper;
+    @Autowired
+    private SetMealDishMapper setMealDishMapper;
     /**
      * 新增菜品和对应的口味
      * @param dishDTO
@@ -62,5 +68,41 @@ public class DishServceImpl implements DishService {
         PageHelper.startPage(dishPageQueryDTO.getPage(), dishPageQueryDTO.getPageSize());
         Page<DishVO> page = dishMapper.pageQuery(dishPageQueryDTO);
         return new PageResult(page.getTotal(), page.getResult());
+    }
+
+    /**
+     * 删除菜品和对应的口味
+     * @param ids
+     */
+    @Transactional
+    public void deleteBatch(List<Long> ids) {
+
+          // 判断该菜品是否在售卖，如果在售卖，抛出业务异常
+        ids.forEach(id -> {
+           Dish dish = dishMapper.getById(id);
+           if(dish.getStatus()== StatusConstant.ENABLE) {
+               throw new DeletionNotAllowedException(MessageConstant.DISH_ON_SALE);
+           }
+        });
+
+            // 根据菜品id查询套餐id
+        List<Long> setMealIds = setMealDishMapper.getSetMealIdsByDishIds(ids);
+        if(setMealIds!=null&&setMealIds.size()>0){
+            throw new DeletionNotAllowedException(MessageConstant.DISH_BE_RELATED_BY_SETMEAL);
+        }
+
+        ids.forEach(id -> {
+            //1. 删除菜品表中的数据
+            dishMapper.deleteById(id);
+            //2. 删除菜品口味表中的数据
+            dishFlavorMapper.deleteByDishId(id);
+        });
+
+
+
+
+
+
+        return;
     }
 }
