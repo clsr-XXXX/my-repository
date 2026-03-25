@@ -59,15 +59,6 @@ public class DishController {
     }
 
     /**
-     * 根据id修改菜品
-     */
-    public Result update(){
-
-        return Result.success();
-
-    }
-
-    /**
      * 根据id查询菜品信息和对应的口味信息
      * @param id
      * @return
@@ -89,6 +80,18 @@ public class DishController {
     public Result updateDish(@RequestBody DishDTO dishDTO) {
         log.info("修改菜品：{}", dishDTO);
         dishService.updateWithFlavor(dishDTO);
+        return Result.success();
+    }
+
+    /**
+     * 启用或者禁用菜品
+     * @return
+     */
+    @ApiOperation("启用禁用菜品")
+    @PostMapping("/status/{status}")
+    public Result startOrStop(@PathVariable Integer status, Long id) {
+        log.info("启用禁用菜品：id={}, status={}", id, status);
+        dishService.startOrStop(status, id);
         return Result.success();
     }
 

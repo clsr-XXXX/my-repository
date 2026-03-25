@@ -59,4 +59,39 @@
         </set>
         where id = #{id}
     </update>
+
+    <resultMap id="dishWithFlavor" type="com.sky.vo.DishVO">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="category_id" property="categoryId"/>
+        <result column="price" property="price"/>
+        <result column="image" property="image"/>
+        <result column="description" property="description"/>
+        <result column="status" property="status"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="categoryName" property="categoryName"/>
+        <collection property="flavors" ofType="com.sky.entity.DishFlavor">
+            <id column="flavor_id" property="id"/>
+            <result column="flavor_name" property="name"/>
+            <result column="flavor_value" property="value"/>
+            <result column="dish_id" property="dishId"/>
+        </collection>
+    </resultMap>
+
+    <select id="list" resultMap="dishWithFlavor">
+        select d.id, d.name, d.category_id, d.price, d.image, d.description, d.status, d.update_time, c.name as categoryName,
+               df.id as flavor_id, df.name as flavor_name, df.value as flavor_value, df.dish_id
+        from dish d
+        left join category c on d.category_id = c.id
+        left join dish_flavor df on d.id = df.dish_id
+        <where>
+            <if test="categoryId != null">
+                and d.category_id = #{categoryId}
+            </if>
+            <if test="status != null">
+                and d.status = #{status}
+            </if>
+        </where>
+        order by d.create_time desc
+    </select>
 </mapper>
