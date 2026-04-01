@@ -24,6 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 套餐业务实现
@@ -56,5 +57,84 @@ public class SetmealServiceImpl implements SetmealService {
      */
     public List<DishItemVO> getDishItemById(Long id) {
         return setmealMapper.getDishItemBySetmealId(id);
+    }
+
+    /**
+     * 新增套餐
+     * @param setmealDTO
+     */
+    @Transactional
+    public void saveWithDish(SetmealDTO setmealDTO) {
+        Setmeal setmeal = new Setmeal();
+        BeanUtils.copyProperties(setmealDTO, setmeal);
+
+        //插入套餐，获取生成的id
+        setmealMapper.insert(setmeal);
+        Long setmealId = setmeal.getId();
+
+        List<SetmealDish> setmealDishes = setmealDTO.getSetmealDishes();
+        if (setmealDishes != null && !setmealDishes.isEmpty()) {
+            // 检查菜品是否启用
+            for (SetmealDish setmealDish : setmealDishes) {
+                Dish dish = dishMapper.getById(setmealDish.getDishId());
+                if (dish == null || dish.getStatus() == 0) {
+                    throw new SetmealEnableFailedException(MessageConstant.SETMEAL_ENABLE_FAILED);
+                }
+            }
+            setmealDishes.forEach(setmealDish -> {
+                setmealDish.setSetmealId(setmealId);
+            });
+
+            //保存套餐和菜品的关联关系
+            setmealDishMapper.insertBatch(setmealDishes);
+        }
+    }
+
+    /**
+     * 批量删除套餐
+     * @param ids
+     */
+    @Transactional
+    public void deleteBatch(List<Long> ids) {
+        //删除套餐菜品关系
+        setmealDishMapper.deleteBySetmealIds(ids);
+        //删除套餐
+        setmealMapper.deleteByIds(ids);
+    }
+
+    /**
+     * 分页查询套餐
+     * @param setmealPageQueryDTO
+     * @return
+     */
+    public PageResult pageQuery(SetmealPageQueryDTO setmealPageQueryDTO) {
+        PageHelper.startPage(setmealPageQueryDTO.getPage(), setmealPageQueryDTO.getPageSize());
+        Page<SetmealVO> page = setmealMapper.pageQuery(setmealPageQueryDTO);
+        return new PageResult(page.getTotal(), page.getResult());
+    }
+
+    /**
+     * 启用禁用套餐
+     * @param status
+     * @param id
+     */
+    public void startOrStop(Integer status, Long id) {
+        Setmeal setmeal = new Setmeal();
+        setmeal.setId(id);
+        setmeal.setStatus(status);
+        setmealMapper.update(setmeal);
+
+        // 根据套餐id查询包含该套餐的菜品id
+        List<SetmealDish> setmealDishes = setmealDishMapper.getBySetmealId(id);
+        if (setmealDishes != null && !setmealDishes.isEmpty()) {
+            List<Long> dishIds = setmealDishes.stream().map(SetmealDish::getDishId).collect(Collectors.toList());
+            // 更新菜品状态
+            dishIds.forEach(dishId -> {
+                Dish dish = new Dish();
+                dish.setId(dishId);
+                dish.setStatus(status);
+                dishMapper.update(dish);
+            });
+        }
     }
 }

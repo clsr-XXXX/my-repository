@@ -10,4 +10,5 @@ public class ShoppingCartDTO implements Serializable {
     private Long setmealId;
     private String dishFlavor;
 
+
 }

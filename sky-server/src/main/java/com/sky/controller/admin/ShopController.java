@@ -38,6 +38,9 @@ public class ShopController {
     @ApiOperation("查询商户状态")
     public Result<Integer> getStatus() {
         Integer status = (Integer) redisTemplate.opsForValue().get(SHOP_STATUS_KEY);
+        if (status == null) {
+            status = 1; // 默认关闭
+        }
         log.info("商户状态：{}", status ==1 ? "营业中" : "已关闭");
         return Result.success(status);
     }
