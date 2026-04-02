@@ -44,7 +44,16 @@ public class ShoppingCartController {
         return Result.success(shoppingCartList);
     }
 
-     public Result sub() {
+    /**
+     * 删除购物车内某种商品
+     * @return
+     */
+     @DeleteMapping("/sub")
+     @ApiOperation("删除购物车内某种商品")
+     public Result sub(@RequestBody ShoppingCartDTO shoppingCartDTO) {
+         log.info("删除购物车内某种商品，shoppingCartDTO:{}", shoppingCartDTO);
+         shoppingCartService.subShoppingCart(shoppingCartDTO);
+
         return Result.success();
     }
 
