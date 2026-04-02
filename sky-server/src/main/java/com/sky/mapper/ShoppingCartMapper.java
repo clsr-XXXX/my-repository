@@ -23,7 +23,7 @@ public interface ShoppingCartMapper {
      * 更新购物车中菜品或套餐的数量
      * @param shoppingCart
      */
-    @Update("update shoppingCart set number = #{number} where id = #{id}")
+    @Update("update shopping_cart set number = #{number} where id = #{id}")
     void updateNumberById(ShoppingCart shoppingCart);
 
     /**
@@ -41,4 +41,11 @@ public interface ShoppingCartMapper {
      */
     @Delete("delete from shopping_cart where user_id = #{userId}")
     void deleteByUserId(Long userId);
+
+    /**
+     * 删除购物车内某种商品
+     * @param shoppingCart
+     */
+    @Delete("delete from shopping_cart where id = #{id}")
+    void subShoppingCart(ShoppingCart shoppingCart);
 }

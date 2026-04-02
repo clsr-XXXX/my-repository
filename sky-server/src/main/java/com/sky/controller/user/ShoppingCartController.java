@@ -7,6 +7,7 @@ import com.sky.service.ShoppingCartService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.ibatis.annotations.Delete;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -48,7 +49,7 @@ public class ShoppingCartController {
      * 删除购物车内某种商品
      * @return
      */
-     @DeleteMapping("/sub")
+     @PostMapping("/sub")
      @ApiOperation("删除购物车内某种商品")
      public Result sub(@RequestBody ShoppingCartDTO shoppingCartDTO) {
          log.info("删除购物车内某种商品，shoppingCartDTO:{}", shoppingCartDTO);
