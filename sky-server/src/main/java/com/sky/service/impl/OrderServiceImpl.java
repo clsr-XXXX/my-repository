@@ -1,5 +1,6 @@
 package com.sky.service.impl;
 
+import com.sky.constant.MessageConstant;
 import com.sky.context.BaseContext;
 import com.sky.dto.OrdersSubmitDTO;
 import com.sky.dto.OrdersPaymentDTO;
@@ -7,6 +8,7 @@ import com.sky.entity.AddressBook;
 import com.sky.entity.OrderDetail;
 import com.sky.entity.Orders;
 import com.sky.entity.ShoppingCart;
+import com.sky.exception.OrderBusinessException;
 import com.sky.mapper.AddressBookMapper;
 import com.sky.mapper.OrderDetailMapper;
 import com.sky.mapper.OrderMapper;
@@ -141,29 +143,58 @@ public class OrderServiceImpl implements OrderService {
             throw new RuntimeException("订单不存在");
         }
 
-        // 允许待付款、待接单、已接单等状态都可以模拟支付（仅用于联调环境）
-        // 只要不是已取消、已完成、退款等终态即可
+//        // 允许待付款、待接单、已接单等状态都可以模拟支付（仅用于联调环境）
+//        // 只要不是已取消、已完成、退款等终态即可
         Integer status = orders.getStatus();
-        if (status != null && (status.equals(Orders.CANCELLED) || status.equals(Orders.COMPLETED) || status.equals(Orders.REFUND))) {
-            throw new RuntimeException("订单状态不正确");
+//        if (status != null && (status.equals(Orders.CANCELLED) || status.equals(Orders.COMPLETED) || status.equals(Orders.REFUND))) {
+//            throw new RuntimeException("订单状态不正确");
+//        }
+
+        // 只禁止已完成、已取消这两种终态
+        if (status != null &&
+                (status.equals(Orders.COMPLETED) ||
+                        status.equals(Orders.CANCELLED))) {
+            throw new OrderBusinessException(MessageConstant.ORDER_STATUS_ERROR);  // 用项目常量，更规范
         }
+//
+//        // 模拟支付成功，更新订单状态
+//        Orders orders1 = Orders.builder()
+//                .id(orders.getId())
+//                .payStatus(Orders.PAID)
+//                .checkoutTime(LocalDateTime.now())
+//                .build();
+//        orderMapper.update(orders1);
+//
+//        // 返回模拟的支付结果
+//        return OrderPaymentVO.builder()
+//                .nonceStr("模拟随机字符串")
+//                .paySign("模拟签名")
+//                .timeStamp(String.valueOf(System.currentTimeMillis()))
+//                .signType("RSA")
+//                .packageStr("prepay_id=模拟prepay_id")
+//                .build();
+
 
         // 模拟支付成功，更新订单状态
-        Orders orders1 = Orders.builder()
+        Orders updateOrders = Orders.builder()
                 .id(orders.getId())
-                .status(Orders.TO_BE_CONFIRMED)
+                .status(Orders.TO_BE_CONFIRMED)  // 待接单
                 .payStatus(Orders.PAID)
                 .checkoutTime(LocalDateTime.now())
                 .build();
-        orderMapper.update(orders1);
+        orderMapper.update(updateOrders);
 
-        // 返回模拟的支付结果
+        // ============== 关键：构造更真实的模拟支付参数 ==============
+        String timeStamp = String.valueOf(System.currentTimeMillis() / 1000);  // 秒级时间戳
+        String nonceStr = "simulated_nonce_" + System.currentTimeMillis();     // 更像真实的随机串
+        String packageStr = "prepay_id=wx" + System.currentTimeMillis() + "prepayid_simulate";
+
         return OrderPaymentVO.builder()
-                .nonceStr("模拟随机字符串")
-                .paySign("模拟签名")
-                .timeStamp(String.valueOf(System.currentTimeMillis()))
-                .signType("RSA")
-                .packageStr("prepay_id=模拟prepay_id")
+                .timeStamp(timeStamp)
+                .nonceStr(nonceStr)
+                .signType("RSA")                    // 小程序目前常用 RSA
+                .packageStr(packageStr)             // 注意字段名是 package（前端会用）
+                .paySign("simulated_pay_sign_1234567890abcdef")  // 随便一个长一点的字符串
                 .build();
     }
 }
